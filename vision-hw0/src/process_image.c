@@ -57,6 +57,12 @@ image copy_image(image im)
 {
     image copy = make_image(im.w, im.h, im.c);
     // TODO Fill this in
+    int i;
+
+    for(i=0; i<im.w*im.h*im.c; i++){
+        copy.data[i] = im.data[i];
+    }
+
     return copy;
 }
 
