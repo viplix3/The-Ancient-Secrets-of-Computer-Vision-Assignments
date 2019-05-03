@@ -71,6 +71,16 @@ image rgb_to_grayscale(image im)
     assert(im.c == 3);
     image gray = make_image(im.w, im.h, 1);
     // TODO Fill this in
+    
+    int i;
+    float weight_r = 0.299;
+    float weight_g = 0.587;
+    float weight_b = 0.114;
+
+    for(i=0; i<gray.w*gray.h*gray.c; i++){
+        gray.data[i] = weight_r*im.data[i] + weight_g*im.data[i+(im.w*im.h)] + weight_b*im.data[i+(2*im.w*im.h)];
+    }
+    
     return gray;
 }
 
