@@ -6,143 +6,164 @@
 
 float get_pixel(image im, int x, int y, int c)
 {
-    // TODO Fill this in
-    // x = column coordinate, y = row coordinate, c = channel coordinate
-    int columns= im.w;
-    int rows = im.h;
-    int channels = im.c;
-    x = ((x < columns) ? ( (x <= 0) ? 0 : x) : columns-1);
-    y = ((y < rows) ? ( (y <= 0) ? 0 : y) : rows-1);
-    c = ((c < channels) ? ( (c <= 0) ? 0 : c) : channels-1);
+	// TODO Fill this in
+	// x = column coordinate, y = row coordinate, c = channel coordinate
+	int columns= im.w;
+	int rows = im.h;
+	int channels = im.c;
+	x = ((x < columns) ? ( (x <= 0) ? 0 : x) : columns-1);
+	y = ((y < rows) ? ( (y <= 0) ? 0 : y) : rows-1);
+	c = ((c < channels) ? ( (c <= 0) ? 0 : c) : channels-1);
 
-    float pixel_value = im.data[c*columns*rows + y*columns + x];
+	float pixel_value = im.data[c*columns*rows + y*columns + x];
 
-    return pixel_value;
+	return pixel_value;
 }
 
 void set_pixel(image im, int x, int y, int c, float v)
 {
-    // TODO Fill this in
-    int columns= im.w;
-    int rows = im.h;
-    int channels = im.c;
-    
-    int columns_assertion = (x < columns) ? ( (x < 0) ? 0 : 1) : 0;
-    int rows_assertion = (y < rows) ? ( (y < 0) ? 0 : 1) : 0;
-    int channels_assertion = (c < channels) ? ( (c < 0) ? 0 : 1) : 0;
+	// TODO Fill this in
+	int columns= im.w;
+	int rows = im.h;
+	int channels = im.c;
+	
+	int columns_assertion = (x < columns) ? ( (x < 0) ? 0 : 1) : 0;
+	int rows_assertion = (y < rows) ? ( (y < 0) ? 0 : 1) : 0;
+	int channels_assertion = (c < channels) ? ( (c < 0) ? 0 : 1) : 0;
 
-    if (!columns_assertion)
-    {
-        printf("Column index is out of bounds");
-        return;
-    }
+	if (!columns_assertion)
+	{
+		printf("Column index is out of bounds");
+		return;
+	}
 
-    if (!rows_assertion)
-    {
-        printf("Row index is out of bounds");
-        return;
-    }
+	if (!rows_assertion)
+	{
+		printf("Row index is out of bounds");
+		return;
+	}
 
-    if (!channels_assertion)
-    {
-        printf("Channel index is out of bounds");
-        return;
-    }
+	if (!channels_assertion)
+	{
+		printf("Channel index is out of bounds");
+		return;
+	}
 
-    im.data[c*columns*rows + y*columns + x] = v;
+	im.data[c*columns*rows + y*columns + x] = v;
 
 }
 
 image copy_image(image im)
 {
-    image copy = make_image(im.w, im.h, im.c);
-    // TODO Fill this in
-    int i;
+	image copy = make_image(im.w, im.h, im.c);
+	// TODO Fill this in
+	int i;
 
-    for(i=0; i<im.w*im.h*im.c; i++){
-        copy.data[i] = im.data[i];
-    }
+	for(i=0; i<im.w*im.h*im.c; i++){
+		copy.data[i] = im.data[i];
+	}
 
-    return copy;
+	return copy;
 }
 
 image rgb_to_grayscale(image im)
 {
-    assert(im.c == 3);
-    image gray = make_image(im.w, im.h, 1);
-    // TODO Fill this in
-    
-    int i;
-    float weight_r = 0.299;
-    float weight_g = 0.587;
-    float weight_b = 0.114;
+	assert(im.c == 3);
+	image gray = make_image(im.w, im.h, 1);
+	// TODO Fill this in
+	
+	int i;
+	float weight_r = 0.299;
+	float weight_g = 0.587;
+	float weight_b = 0.114;
 
-    for(i=0; i<gray.w*gray.h*gray.c; i++){
-        gray.data[i] = weight_r*im.data[i] + weight_g*im.data[i+(im.w*im.h)] + weight_b*im.data[i+(2*im.w*im.h)];
-    }
-    
-    return gray;
+	for(i=0; i<gray.w*gray.h*gray.c; i++){
+		gray.data[i] = weight_r*im.data[i] + weight_g*im.data[i+(im.w*im.h)] + weight_b*im.data[i+(2*im.w*im.h)];
+	}
+	
+	return gray;
 }
 
 void shift_image(image im, int c, float v)
 {
-    // TODO Fill this in
-    int i;
-    for(i=0; i<im.w*im.h; i++){
-        im.data[c*im.w*im.h + i] = v + im.data[c*im.w*im.h + i];
-    }
+	// TODO Fill this in
+	int i;
+	for(i=0; i<im.w*im.h; i++){
+		im.data[c*im.w*im.h + i] = v + im.data[c*im.w*im.h + i];
+	}
 }
 
 void clamp_image(image im)
 {
-    // TODO Fill this in
-    int i;
-    for(i=0; i<im.w*im.h*im.c; i++){
-        im.data[i] = (im.data[i] > 0.) ? ( (im.data[i] > 1.) ? 1. : im.data[i]) : 0.;
-    }
+	// TODO Fill this in
+	int i;
+	for(i=0; i<im.w*im.h*im.c; i++){
+		im.data[i] = (im.data[i] > 0.) ? ( (im.data[i] > 1.) ? 1. : im.data[i]) : 0.;
+	}
 }
 
 
 // These might be handy
 float three_way_max(float a, float b, float c)
 {
-    return (a > b) ? ( (a > c) ? a : c) : ( (b > c) ? b : c) ;
+	return (a > b) ? ( (a > c) ? a : c) : ( (b > c) ? b : c) ;
 }
 
 float three_way_min(float a, float b, float c)
 {
-    return (a < b) ? ( (a < c) ? a : c) : ( (b < c) ? b : c) ;
+	return (a < b) ? ( (a < c) ? a : c) : ( (b < c) ? b : c) ;
 }
 
 void rgb_to_hsv(image im)
 {
-    // TODO Fill this in
-    int i;
-    float hue, saturation, value, min, max, temp, r, g, b;
+	// TODO Fill this in
+	int i;
+	float hue, saturation, value, min, max, temp, r, g, b;
 
-    for(i=0; i<im.w*im.h; i++){
-    	r = im.data[i];
-    	g = im.data[i+(im.w*im.h)];
-    	b = im.data[i+(2*im.w*im.h)];
+	for(i=0; i<im.w*im.h; i++){
+		r = im.data[i];
+		g = im.data[i+(im.w*im.h)];
+		b = im.data[i+(2*im.w*im.h)];
 		max = three_way_max(r, g, b);
 		min = three_way_min(r, g, b);
 
-    	value = max;
+		value = max;
 
-    	float C = max - min;
-    	saturation = (C == 0) ? 0 : ((max == 0) ? 0 : C / max);
+		float C = value - min;
+		saturation = (C == 0) ? 0 : ((value == 0) ? 0 : C / value);
 
-    	temp = (C == 0) ? 0 : ((value == r) ? (g - b) / C : ((value == g) ? ((b - r) / C) + 2.0 : ((r - g) / C) + 4.0));
-    	hue = (temp < 0) ? (temp / 6) + 1 : temp / 6;
+		temp = (C == 0) ? 0 : ((value == r) ? (g - b) / C : ((value == g) ? ((b - r) / C) + 2.0 : ((r - g) / C) + 4.0));
+		hue = (temp < 0) ? (temp / 6) + 1 : temp / 6;
 
-    	im.data[i] = hue;
-    	im.data[i+(im.w*im.h)] = saturation;
-    	im.data[i+(2*im.w*im.h)] = value;
+		im.data[i] = hue;
+		im.data[i+(im.w*im.h)] = saturation;
+		im.data[i+(2*im.w*im.h)] = value;
 
-    }
+	}
 }
 
 void hsv_to_rgb(image im)
 {
-    // TODO Fill this in
+	// TODO Fill this in
+	// int i;
+	// float r, g, b, hue, saturation, value, temp, C, min;
+
+	// for(i=0; i<im.w*im.h; i++){
+	// 	hue = im.data[i];
+	// 	saturation = im.data[i+(im.w*im.h)];
+	// 	value = im.data[i+(2*im.w*im.h)];
+
+	// 	C = saturation * value;
+	// 	min = value - C;
+
+	// 	temp = hue * 6;
+	// 	temp = C * (1.0 - fabs(fmod(temp, 2) - 1));
+	
+	// 	switch(temp)
+	// 	{
+	// 		case 0:	r, g, b = 0, 0, 0;
+	// 				break;
+	// 	}
+
+	// }
 }
