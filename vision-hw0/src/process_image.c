@@ -117,6 +117,29 @@ float three_way_min(float a, float b, float c)
 void rgb_to_hsv(image im)
 {
     // TODO Fill this in
+    int i;
+    float hue, saturation, value, min, max, temp, r, g, b;
+
+    for(i=0; i<im.w*im.h; i++){
+    	r = im.data[i];
+    	g = im.data[i+(im.w*im.h)];
+    	b = im.data[i+(2*im.w*im.h)];
+		max = three_way_max(r, g, b);
+		min = three_way_min(r, g, b);
+
+    	value = max;
+
+    	float C = max - min;
+    	saturation = (C == 0) ? 0 : ((max == 0) ? 0 : C / max);
+
+    	temp = (C == 0) ? 0 : ((value == r) ? (g - b) / C : ((value == g) ? ((b - r) / C) + 2.0 : ((r - g) / C) + 4.0));
+    	hue = (temp < 0) ? (temp / 6) + 1 : temp / 6;
+
+    	im.data[i] = hue;
+    	im.data[i+(im.w*im.h)] = saturation;
+    	im.data[i+(2*im.w*im.h)] = value;
+
+    }
 }
 
 void hsv_to_rgb(image im)
