@@ -93,6 +93,17 @@ void shift_image(image im, int c, float v)
 	}
 }
 
+void scale_image(image im, int c, float v)
+{
+    // TODO Fill this in
+    for (int h=0; h<im.h; h++){
+        for (int w=0; w<im.w; w++){
+            float value = get_pixel(im, w, h, c);
+            set_pixel(im, w, h, c, value*v);
+        }
+    }
+}
+
 void clamp_image(image im)
 {
 	// TODO Fill this in
@@ -118,7 +129,7 @@ void rgb_to_hsv(image im)
 {
 	// TODO Fill this in
 	int i;
-	float hue, saturation, value, min, max, temp, r, g, b;
+	float hue, saturation, value, min, max, hue_prime, r, g, b;
 
 	for(i=0; i<im.w*im.h; i++){
 		r = im.data[i];
@@ -132,8 +143,8 @@ void rgb_to_hsv(image im)
 		float C = value - min;
 		saturation = (C == 0) ? 0 : ((value == 0) ? 0 : C / value);
 
-		temp = (C == 0) ? 0 : ((value == r) ? (g - b) / C : ((value == g) ? ((b - r) / C) + 2.0 : ((r - g) / C) + 4.0));
-		hue = (temp < 0) ? (temp / 6) + 1 : temp / 6;
+		hue_prime = (C == 0) ? 0 : ((value == r) ? (g - b) / C : ((value == g) ? ((b - r) / C) + 2.0 : ((r - g) / C) + 4.0));
+		hue = (hue_prime < 0) ? (hue_prime / 6.0) + 1 : hue_prime / 6.0;
 
 		im.data[i] = hue;
 		im.data[i+(im.w*im.h)] = saturation;
@@ -145,25 +156,86 @@ void rgb_to_hsv(image im)
 void hsv_to_rgb(image im)
 {
 	// TODO Fill this in
-	// int i;
-	// float r, g, b, hue, saturation, value, temp, C, min;
+	int i;
+	float r, g, b, hue, saturation, value, hue_prime, C, max, min;
 
-	// for(i=0; i<im.w*im.h; i++){
-	// 	hue = im.data[i];
-	// 	saturation = im.data[i+(im.w*im.h)];
-	// 	value = im.data[i+(2*im.w*im.h)];
+	for(i=0; i<im.w*im.h; i++){
+		hue = im.data[i]; // max value
+		saturation = im.data[i+(im.w*im.h)];
+		value = im.data[i+(2*im.w*im.h)];
 
-	// 	C = saturation * value;
-	// 	min = value - C;
+		max = value;
+		C = saturation * value; // max - min
+		min = max - C;
 
-	// 	temp = hue * 6;
-	// 	temp = C * (1.0 - fabs(fmod(temp, 2) - 1));
-	
-	// 	switch(temp)
-	// 	{
-	// 		case 0:	r, g, b = 0, 0, 0;
-	// 				break;
-	// 	}
+		hue_prime = hue * 6.;
+		float X = (1 - fabs(fmod(hue_prime, 2) - 1)); // Calulating hue values in range [0-1)
 
-	// }
+		// In this part of HSV hexagon, R component will have the maximum value, B will have the minimum, and G will have value somehwere between R and B
+		if ( (hue_prime >= 0.) && (hue_prime < 1.) )
+		{
+			r = max;
+			b = min;
+			g = (C * X) + b;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else if ( (hue_prime >= 1.) && (hue_prime < 2.) ) // In this part of HSV hexagon, G component will have the maximum value, B will have the minimum, and R will have value somehwere between G and B
+		{
+			g = max;
+			b = min;
+			r = (C * X) + b;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else if ( (hue_prime >= 2.) && (hue_prime < 3.) ) // Same logic exteded
+		{
+			g = max;
+			r = min;
+			b = (C* X) + r;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else if ( (hue_prime >= 3.) && (hue_prime < 4.) )
+		{
+			b = max;
+			r = min;
+			g = (C* X) + r;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else if ( (hue_prime >= 4.) && (hue_prime < 5.) )
+		{
+			b = max;
+			g = min;
+			r = (C* X) + g;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else if ( (hue_prime >= 5.) && (hue_prime < 6.) )
+		{
+			r = max;
+			g = min;
+			b = (C*X) + g;
+
+			im.data[i] = r;
+			im.data[i+(im.w*im.h)] = g;
+			im.data[i+(2*im.w*im.h)] = b;
+		}
+		else{
+			im.data[i] = 0;
+			im.data[i+(im.w*im.h)] = 0;
+			im.data[i+(2*im.w*im.h)] = 0;	
+		}
+	}
 }
