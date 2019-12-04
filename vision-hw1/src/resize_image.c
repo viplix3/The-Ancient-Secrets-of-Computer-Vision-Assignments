@@ -1,16 +1,32 @@
 #include <math.h>
 #include "image.h"
+#include <stdio.h>
 
 float nn_interpolate(image im, float x, float y, int c)
 {
     // TODO Fill in
-    return 0;
+    return get_pixel(im, round(x), round(y), c);
 }
 
 image nn_resize(image im, int w, int h)
 {
     // TODO Fill in (also fix that first line)
-    return make_image(1,1,1);
+    float w_scaling_factor, h_scaling_factor;
+    int i, j, k;
+
+    image resized_image = make_image(w, h, im.c);
+    w_scaling_factor = (float)im.w/w;
+    h_scaling_factor = (float)im.h/h;
+
+    for(i=0; i<w; i++){
+    	for(j=0; j<h; j++){
+    		for(k=0; k<im.c; k++){
+    			set_pixel(resized_image, i, j, k, nn_interpolate(im, i*w_scaling_factor, j*h_scaling_factor, k));
+    		}
+    	}
+    }
+
+    return resized_image;
 }
 
 float bilinear_interpolate(image im, float x, float y, int c)
