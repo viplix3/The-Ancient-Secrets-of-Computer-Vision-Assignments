@@ -8,7 +8,10 @@ float nn_interpolate(image im, float x, float y, int c)
    	/* Logic for nearest neighbour interpolation
    		round() C function of math library will return the closest integer to the given float number
    	*/
-    return get_pixel(im, round(x), round(y), c);
+   	int w = (floor(x) < ceil(x)) ? (ceil(x)) : floor(x);
+   	int h = (floor(y) < ceil(y)) ? (ceil(y)) : floor(y);
+   	printf("%d %f %d %f\n", w, x, h, y);
+    return get_pixel(im, w, h, c);
 }
 
 image nn_resize(image im, int w, int h)
