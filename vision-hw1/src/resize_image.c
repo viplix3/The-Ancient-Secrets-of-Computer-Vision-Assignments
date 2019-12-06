@@ -5,6 +5,9 @@
 float nn_interpolate(image im, float x, float y, int c)
 {
     // TODO Fill in
+   	/* Logic for nearest neighbour interpolation
+   		round() C function of math library will return the closest integer to the given float number
+   	*/
     return get_pixel(im, round(x), round(y), c);
 }
 
@@ -15,6 +18,14 @@ image nn_resize(image im, int w, int h)
     int i, j, k;
 
     image resized_image = make_image(w, h, im.c);
+
+    /* Logic behind new image to original image pixel coordinate mapping
+    	If original image is of size 4x4x3 and resized image is tobe of size 7x7x3, then:
+    	7 pixels of new image = 4 pixels of original image
+    	1 pixel of new image = 4/7 pixel of original image
+
+    	This logic will be used to map pixel coordinate of new image to old image, and then will be interpolated using nn_interpolate function to get exact pixel values of new image.
+    */
     w_scaling_factor = (float)im.w/w;
     h_scaling_factor = (float)im.h/h;
 

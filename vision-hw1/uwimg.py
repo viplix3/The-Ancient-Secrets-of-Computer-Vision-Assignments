@@ -3,7 +3,12 @@ from ctypes import *
 import math
 import random
 
-lib = CDLL(os.path.join(os.path.dirname(__file__), "libuwimg.so"), RTLD_GLOBAL)
+cwd = os.getcwd()
+lib_path = os.path.join(cwd, "libuwimg.so")
+# exit()
+
+lib = CDLL(lib_path, RTLD_GLOBAL)
+
 
 def c_array(ctype, values):
     arr = (ctype*len(values))()
@@ -148,5 +153,10 @@ convolve_image.restype = IMAGE
 if __name__ == "__main__":
     im = load_image("data/dog.jpg")
     save_image(im, "hey")
+
+    # nn_interpolate_resizing
+    im = load_image("data/dogsmall.jpg")
+    a = nn_resize(im, im.w*4, im.h*4)
+    save_image(a, "dog4x-nn")
 
 
