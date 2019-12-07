@@ -9,18 +9,86 @@
 void l1_normalize(image im)
 {
     // TODO
+    float pixel_sum = 0;
+    int i, j, k;
+    for(i=0; i<im.w; i++){
+        for(j=0; j<im.h; j++){
+            for(k=0; k<im.c; k++){
+                    pixel_sum += get_pixel(im, i, j, k);
+            }
+        }
+    }
+
+    for(i=0; i<im.c; i++)
+        scale_image(im, i, 1.0/pixel_sum);
 }
 
 image make_box_filter(int w)
 {
     // TODO
-    return make_image(1,1,1);
+    image box_filter = make_image(w, w, 1);
+    int i, j, k;
+
+    for(i=0; i<box_filter.w; i++){
+        for(j=0; j<box_filter.h; j++){
+            for(k=0; k<box_filter.c; k++)
+                set_pixel(box_filter, i, j, k, 1.0);
+        }
+    }
+
+    l1_normalize(box_filter);
+
+    return box_filter;
 }
 
 image convolve_image(image im, image filter, int preserve)
 {
     // TODO
-    return make_image(1,1,1);
+    assert(filter.c == im.c || filter.c == 1); //Assertion check to make sure filter is of expected channels
+
+    // Conditional check for number of channels between image and filters
+    int out_channels = (preserve) ? (im.c) : (1);
+
+    // This will hold the convolved image
+    image convolved_image = make_image(im.w, im.h, out_channels);
+
+    // Convolution loop
+    int filter_i, filter_j, image_i, image_j, channels;
+    float pixel_value;
+
+    for(image_j=0; image_j<im.h; image_j++)
+    {
+        for(image_i=0; image_i<im.w; image_i++)
+        {
+
+            for(filter_j=0; filter_j<filter.h; filter_j++){
+                for(filter_i=0; filter_i<filter.w; filter_i++){
+                        for(channels=0; channels<im.c; channels++){
+
+                            int pixel_w, pixel_h;
+                            pixel_w = image_i+filter_i-(filter.w/2);
+                            pixel_h = image_j+filter_j-(filter.h/2);
+
+                            pixel_value = get_pixel(convolved_image, image_i, image_j, channels);
+
+                            if(filter.c == 1)
+                                pixel_value += get_pixel(filter, filter_i, filter_j, 0) * get_pixel(im, pixel_w, pixel_h, channels);
+                            
+                            else
+                                pixel_value += get_pixel(filter, filter_i, filter_j, channels) * get_pixel(im, pixel_w, pixel_h, channels);
+
+                            if(preserve)
+                                set_pixel(convolved_image, image_i, image_j, channels, pixel_value);
+                            else
+                                set_pixel(convolved_image, image_i, image_j, 0, pixel_value);
+                    }
+                }
+            }
+        }
+
+    }
+
+    return convolved_image;
 }
 
 image make_highpass_filter()

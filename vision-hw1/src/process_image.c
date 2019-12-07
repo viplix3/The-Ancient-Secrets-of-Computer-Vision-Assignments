@@ -33,19 +33,19 @@ void set_pixel(image im, int x, int y, int c, float v)
 
 	if (!columns_assertion)
 	{
-		printf("Column index is out of bounds");
+		printf("Column index is out of bounds\n");
 		return;
 	}
 
 	if (!rows_assertion)
 	{
-		printf("Row index is out of bounds");
+		printf("Row index is out of bounds\n");
 		return;
 	}
 
 	if (!channels_assertion)
 	{
-		printf("Channel index is out of bounds");
+		printf("Channel index is out of bounds\n");
 		return;
 	}
 

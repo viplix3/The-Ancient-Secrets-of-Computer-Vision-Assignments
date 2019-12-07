@@ -1,6 +1,5 @@
 #include <math.h>
 #include "image.h"
-#include <stdio.h>
 
 float nn_interpolate(image im, float x, float y, int c)
 {
