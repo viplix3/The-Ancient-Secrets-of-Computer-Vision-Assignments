@@ -94,19 +94,42 @@ image convolve_image(image im, image filter, int preserve)
 image make_highpass_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image high_pass_filter = make_image(3, 3, 1);
+    set_pixel(high_pass_filter, 1, 0, 0, -1);
+    set_pixel(high_pass_filter, 0, 1, 0, -1);
+    set_pixel(high_pass_filter, 2, 1, 0, -1);
+    set_pixel(high_pass_filter, 1, 2, 0, -1);
+    set_pixel(high_pass_filter, 1, 1, 0, 4);
+
+    return high_pass_filter;
 }
 
 image make_sharpen_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image sharpen_filter = make_image(3, 3, 1);
+    set_pixel(sharpen_filter, 1, 0, 0, -1);
+    set_pixel(sharpen_filter, 0, 1, 0, -1);
+    set_pixel(sharpen_filter, 2, 1, 0, -1);
+    set_pixel(sharpen_filter, 1, 2, 0, -1);
+    set_pixel(sharpen_filter, 1, 1, 0, 5);
+
+    return sharpen_filter;
 }
 
 image make_emboss_filter()
 {
     // TODO
-    return make_image(1,1,1);
+    image emboss_filter = make_image(3, 3, 1);
+    set_pixel(emboss_filter, 0, 0, 0, -2);
+    set_pixel(emboss_filter, 1, 0, 0, -1);
+    set_pixel(emboss_filter, 0, 1, 0, -1);
+    set_pixel(emboss_filter, 1, 1, 0, 1);
+    set_pixel(emboss_filter, 2, 1, 0, 1);
+    set_pixel(emboss_filter, 1, 2, 0, 1);
+    set_pixel(emboss_filter, 2, 2, 0, 2);
+
+    return emboss_filter;
 }
 
 // Question 2.2.1: Which of these filters should we use preserve when we run our convolution and which ones should we not? Why?
