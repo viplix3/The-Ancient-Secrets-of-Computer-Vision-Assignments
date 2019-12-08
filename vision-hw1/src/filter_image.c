@@ -133,10 +133,10 @@ image make_emboss_filter()
 }
 
 // Question 2.2.1: Which of these filters should we use preserve when we run our convolution and which ones should we not? Why?
-// Answer: TODO
+// Answer: Sharpen and Emboss filters will require the preserve to be set True as we are expecting coloured output from these filters.
 
 // Question 2.2.2: Do we have to do any post-processing for the above filters? Which ones and why?
-// Answer: TODO
+// Answer: Yes, high_pass filter will require some post-processing to get rid of false activations of edges.
 
 image make_gaussian_filter(float sigma)
 {
