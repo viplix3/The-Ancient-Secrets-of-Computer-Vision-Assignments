@@ -137,11 +137,30 @@ image make_emboss_filter()
 
 // Question 2.2.2: Do we have to do any post-processing for the above filters? Which ones and why?
 // Answer: Yes, high_pass filter will require some post-processing to get rid of false activations of edges.
+float compute_gaussian(int x, int y, float sigma)
+{
+    float gaussian = (1/(TWOPI*pow(sigma, 2))) * (exp(-(pow(x, 2) + pow(y, 2))/(2*pow(sigma, 2))));
+    return gaussian;
+}
 
 image make_gaussian_filter(float sigma)
 {
     // TODO
-    return make_image(1,1,1);
+    int filter_size = 6*sigma;
+    filter_size = (filter_size % 2 == 0) ? (filter_size+1) : (filter_size);
+    image gaussian_filter = make_image(filter_size, filter_size, 1);
+    int i, j;
+
+    for(i=0; i<gaussian_filter.h; i++){
+        for(j=0; j<gaussian_filter.w; j++){
+            set_pixel(gaussian_filter, i, j, 0, compute_gaussian((gaussian_filter.w/2)-j, (gaussian_filter.h/2)-i, sigma));
+        }
+    }
+
+
+    l1_normalize(gaussian_filter);
+
+    return gaussian_filter;
 }
 
 image add_image(image a, image b)
