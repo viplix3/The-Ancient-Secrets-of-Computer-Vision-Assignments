@@ -197,3 +197,15 @@ if __name__ == "__main__":
     save_image(lfreq, "low-frequency")
     save_image(hfreq, "high-frequency")
     save_image(reconstruct, "reconstruct")
+
+    # Sobel filter
+    im = load_image("data/dog.jpg")
+    res = sobel_image(im)
+    mag = res[0]
+    feature_normalize(mag)
+    save_image(mag, "magnitude")
+
+    # Colorized sobel
+    im = load_image("data/dog.jpg")
+    res = colorize_sobel(im)
+    save_image(res, "sobel_color")
