@@ -153,7 +153,7 @@ image make_gaussian_filter(float sigma)
 
     for(i=0; i<gaussian_filter.h; i++){
         for(j=0; j<gaussian_filter.w; j++){
-            set_pixel(gaussian_filter, i, j, 0, compute_gaussian((gaussian_filter.w/2)-j, (gaussian_filter.h/2)-i, sigma));
+            set_pixel(gaussian_filter, j, i, 0, compute_gaussian((gaussian_filter.w/2)-j, (gaussian_filter.h/2)-i, sigma));
         }
     }
 
@@ -166,13 +166,37 @@ image make_gaussian_filter(float sigma)
 image add_image(image a, image b)
 {
     // TODO
-    return make_image(1,1,1);
+    assert(a.w == b.w);
+    assert(a.h == b.h);
+
+    image added_image = make_image(a.w, a.h, a.c);
+    int i, j, k;
+
+    for(i=0; i<a.w; i++){
+        for(j=0; j<a.h; j++){
+            for(k=0; k<a.c; k++)
+                set_pixel(added_image, i, j, k, get_pixel(a, i, j, k) + get_pixel(b, i, j, k));
+        }
+    }
+    return added_image;
 }
 
 image sub_image(image a, image b)
 {
     // TODO
-    return make_image(1,1,1);
+    assert(a.w == b.w);
+    assert(a.h == b.h);
+
+    image subtracted_image = make_image(a.w, a.h, a.c);
+    int i, j, k;
+
+    for(i=0; i<a.w; i++){
+        for(j=0; j<a.h; j++){
+            for(k=0; k<a.c; k++)
+                set_pixel(subtracted_image, i, j, k, get_pixel(a, i, j, k) - get_pixel(b, i, j, k));
+        }
+    }
+    return subtracted_image;
 }
 
 image make_gx_filter()
