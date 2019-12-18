@@ -205,6 +205,20 @@ image cornerness_response(image S)
     image R = make_image(S.w, S.h, 1);
     // TODO: fill in R, "cornerness" for each pixel using the structure matrix.
     // We'll use formulation det(S) - alpha * trace(S)^2, alpha = .06.
+
+    int i, j;
+    float alpha = 0.06;
+
+    for(i=0; i<R.w; i++){
+        for(j=0; j<R.h; j++){
+            float Ixx = get_pixel(S, i, j, 0);
+            float Iyy = get_pixel(S, i, j, 1);
+            float Ixy = get_pixel(S, i, j, 2);
+            float cornerness = ((Ixx * Iyy) - pow(Ixy, 2)) - (alpha * pow((Ixx + Iyy), 2)); // Used normal determinanat and trace formulas
+            set_pixel(R, i, j, 0, cornerness);
+        }
+    }
+
     return R;
 }
 
