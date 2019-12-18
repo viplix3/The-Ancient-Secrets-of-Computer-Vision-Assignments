@@ -78,13 +78,48 @@ void mark_corners(image im, descriptor *d, int n)
     }
 }
 
+
+float compute_1d_gaussian(int x, float sigma)
+{
+    float gaussian = (1/(TWOPI*pow(sigma, 2))) * (exp(-(pow(x, 2))/(2*pow(sigma, 2))));
+    return gaussian;
+}
+
+
 // Creates a 1d Gaussian filter.
 // float sigma: standard deviation of Gaussian.
 // returns: single row image of the filter.
 image make_1d_gaussian(float sigma)
 {
     // TODO: optional, make separable 1d Gaussian.
-    return make_image(1,1,1);
+
+    int filter_size = 6*sigma;
+    filter_size = (filter_size % 2 == 0) ? (filter_size+1) : (filter_size);
+    image gaussian_1d_filter = make_image(filter_size, 1, 1);
+    int j;
+
+    for(j=0; j<gaussian_1d_filter.w; j++){
+        set_pixel(gaussian_1d_filter, j, 0, 0, compute_1d_gaussian((gaussian_1d_filter.w/2)-j, sigma));
+    }
+
+    l1_normalize(gaussian_1d_filter);
+
+    return gaussian_1d_filter;
+}
+
+image transpose_image(image im)
+{
+    image transposed_im = make_image(im.h, im.w, im.c);
+    int i, j, k;
+
+    for(i=0; i<im.h; i++){
+        for(j=0; j<im.w; j++){
+            for(k=0; k<im.c; k++)
+                set_pixel(transposed_im, i, j, k, get_pixel(im, j, i, k));
+        }
+    }
+
+    return transposed_im;
 }
 
 // Smooths an image using separable Gaussian filter.
@@ -93,7 +128,7 @@ image make_1d_gaussian(float sigma)
 // returns: smoothed image.
 image smooth_image(image im, float sigma)
 {
-    if(1){
+    if(0){
         image g = make_gaussian_filter(sigma);
         image s = convolve_image(im, g, 1);
         free_image(g);
@@ -101,7 +136,14 @@ image smooth_image(image im, float sigma)
     } else {
         // TODO: optional, use two convolutions with 1d gaussian filter.
         // If you implement, disable the above if check.
-        return copy_image(im);
+        image g_nx1 = make_1d_gaussian(sigma);
+        image g_1xn = transpose_image(g_nx1);
+
+        image s = convolve_image(im, g_nx1, 1);
+        s = convolve_image(s, g_1xn, 1);
+        free_image(g_nx1);
+        free_image(g_1xn);
+        return s;
     }
 }
 
@@ -146,6 +188,10 @@ image structure_matrix(image im, float sigma)
 
     // Calculating structure matrix S using weighted sun (with the help of gaussian filter having provided sigma)
     S = convolve_image(S, gaussian_filter, 1);
+    free_image(gx_filter);
+    free_image(gy_filter);
+    free_image(Ix);
+    free_image(Iy);
 
     return S;
 }

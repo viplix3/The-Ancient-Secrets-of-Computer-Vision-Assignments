@@ -289,6 +289,10 @@ image *sobel_image(image im)
         }
     }
 
+    free_image(gx_filter);
+    free_image(gy_filter);
+    free_image(GX);
+    free_image(GY);
     return result_image;
 }
 
