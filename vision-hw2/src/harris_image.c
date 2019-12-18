@@ -139,8 +139,8 @@ image smooth_image(image im, float sigma)
         image g_nx1 = make_1d_gaussian(sigma);
         image g_1xn = transpose_image(g_nx1);
 
-        image s = convolve_image(im, g_nx1, 1);
-        s = convolve_image(s, g_1xn, 1);
+        image s = convolve_image(im, g_1xn, 1);
+        s = convolve_image(s, g_nx1, 1);
         free_image(g_nx1);
         free_image(g_1xn);
         return s;
@@ -159,7 +159,7 @@ image structure_matrix(image im, float sigma)
 
     image gx_filter = make_gx_filter(); // Making sobel filter to give x-directional gradient
     image gy_filter = make_gy_filter(); // Making sobel filter to give y-directional gradient
-    image gaussian_filter = make_gaussian_filter(sigma);
+    // image gaussian_filter = make_gaussian_filter(sigma);
     int i, j, k;
     float pixel_value;
 
@@ -187,7 +187,8 @@ image structure_matrix(image im, float sigma)
     }
 
     // Calculating structure matrix S using weighted sun (with the help of gaussian filter having provided sigma)
-    S = convolve_image(S, gaussian_filter, 1);
+    // S = convolve_image(S, gaussian_filter, 1);
+    S = smooth_image(S, sigma);
     free_image(gx_filter);
     free_image(gy_filter);
     free_image(Ix);
