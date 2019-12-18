@@ -3,7 +3,11 @@ from ctypes import *
 import math
 import random
 
-lib = CDLL(os.path.join(os.path.dirname(__file__), "libuwimg.so"), RTLD_GLOBAL)
+cwd = os.getcwd()
+lib_path = os.path.join(cwd, "libuwimg.so")
+
+lib = CDLL(lib_path, RTLD_GLOBAL)
+
 
 def c_array(ctype, values):
     arr = (ctype*len(values))()
@@ -187,4 +191,9 @@ def panorama_image(a, b, sigma=2, thresh=5, nms=3, inlier_thresh=2, iters=10000,
 if __name__ == "__main__":
     im = load_image("data/dog.jpg")
     save_image(im, "hey")
+
+    # Checking harris-corer detector
+    im = load_image("data/Rainier1.png")
+    detect_and_draw_corners(im, 2, 50, 3)
+    save_image(im, "corners")
 

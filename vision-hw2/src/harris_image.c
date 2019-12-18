@@ -189,6 +189,8 @@ image structure_matrix(image im, float sigma)
     // Calculating structure matrix S using weighted sun (with the help of gaussian filter having provided sigma)
     // S = convolve_image(S, gaussian_filter, 1);
     S = smooth_image(S, sigma);
+
+    // free_image(gaussian_filter);
     free_image(gx_filter);
     free_image(gy_filter);
     free_image(Ix);
@@ -234,6 +236,25 @@ image nms_image(image im, int w)
     //     for neighbors within w:
     //         if neighbor response greater than pixel response:
     //             set response to be very low (I use -999999 [why not 0??])
+
+    int i, j, k, l;
+    for(i=0; i<r.w; i++){
+        for(j=0; j<r.h; j++){
+            float current_pixel_response = get_pixel(im, i, j, 0);
+            
+            for(k=-w; k<w+1; k++){
+                for(l=-w; l<w+1; l++){
+                    float comparator_pixel_response = get_pixel(im, k, l, 0);
+                    if(comparator_pixel_response > current_pixel_response){
+                        set_pixel(r, i, j, 0, -999999);
+                        goto done_with_current_pixel;
+                    }
+                }
+            }
+            done_with_current_pixel:;
+        }
+    }
+
     return r;
 }
 
@@ -257,13 +278,26 @@ descriptor *harris_corner_detector(image im, float sigma, float thresh, int nms,
 
 
     //TODO: count number of responses over threshold
-    int count = 1; // change this
+    int count = 0; // change this
+    int i, j;
 
+    for(i=0; i<Rnms.w; i++){
+        for(j=0; j<Rnms.h; j++){
+            float pixel_response = get_pixel(Rnms, i, j, 0);
+            if(pixel_response > thresh)
+                count++;
+        }
+    }
     
     *n = count; // <- set *n equal to number of corners in image.
     descriptor *d = calloc(count, sizeof(descriptor));
     //TODO: fill in array *d with descriptors of corners, use describe_index.
-
+    for (i = 0; i < Rnms.h*Rnms.w; ++i){
+      if (Rnms.data[i] > thresh) {
+        *d++ = describe_index(im, i);
+      }
+    }
+    d -= count;
 
     free_image(S);
     free_image(R);
