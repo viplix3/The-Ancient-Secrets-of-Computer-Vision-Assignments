@@ -114,6 +114,39 @@ image structure_matrix(image im, float sigma)
 {
     image S = make_image(im.w, im.h, 3);
     // TODO: calculate structure matrix for im.
+
+    image gx_filter = make_gx_filter(); // Making sobel filter to give x-directional gradient
+    image gy_filter = make_gy_filter(); // Making sobel filter to give y-directional gradient
+    image gaussian_filter = make_gaussian_filter(sigma);
+    int i, j, k;
+    float pixel_value;
+
+    image Ix = convolve_image(im, gx_filter, 0); // Convolving input image with x-directional sobel filter to get Ix (derivative along x-axis)
+    image Iy = convolve_image(im, gy_filter, 0); // Convolving input image with y-directional sobel filter to get Iy (derivative along y-axis)
+
+    // Setting pixel values of S such that 1st channel is Ix^2, 2nd channel is Iy^2 and 3rd channel is IxIy
+    for(i=0; i<S.w; i++){
+        for(j=0; j<S.h; j++){
+            for(k=0; k<S.c; k++){
+                if(k==0){
+                    pixel_value = pow(get_pixel(Ix, i, j, 0), 2);
+                    set_pixel(S, i, j, k, pixel_value);
+                }
+                else if(k==1){
+                    pixel_value = pow(get_pixel(Iy, i, j, 0), 2);
+                    set_pixel(S, i, j, k, pixel_value);
+                }
+                else{
+                    pixel_value = get_pixel(Ix, i, j, 0) * get_pixel(Iy, i, j, 0);
+                    set_pixel(S, i, j, k, pixel_value);
+                }
+            }
+        }
+    }
+
+    // Calculating structure matrix S using weighted sun (with the help of gaussian filter having provided sigma)
+    S = convolve_image(S, gaussian_filter, 1);
+
     return S;
 }
 
