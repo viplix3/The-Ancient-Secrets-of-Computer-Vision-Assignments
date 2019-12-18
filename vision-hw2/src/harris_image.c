@@ -244,7 +244,7 @@ image nms_image(image im, int w)
             
             for(k=-w; k<w+1; k++){
                 for(l=-w; l<w+1; l++){
-                    float comparator_pixel_response = get_pixel(im, k, l, 0);
+                    float comparator_pixel_response = get_pixel(im, i+k, j+l, 0);
                     if(comparator_pixel_response > current_pixel_response){
                         set_pixel(r, i, j, 0, -999999);
                         goto done_with_current_pixel;
