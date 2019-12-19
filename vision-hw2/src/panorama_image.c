@@ -118,7 +118,12 @@ image find_and_draw_matches(image a, image b, float sigma, float thresh, int nms
 float l1_distance(float *a, float *b, int n)
 {
     // TODO: return the correct number.
-    return 0;
+    float l1_diff = 0.0;
+    int i;
+    for(int i=0; i<n; i++){
+    	l1_diff += fabsf(a[i] - b[i]);
+    }
+    return l1_diff;
 }
 
 // Finds best matches between descriptors of two images.
@@ -138,11 +143,22 @@ match *match_descriptors(descriptor *a, int an, descriptor *b, int bn, int *mn)
         // TODO: for every descriptor in a, find best match in b.
         // record ai as the index in *a and bi as the index in *b.
         int bind = 0; // <- find the best match
+        i = 0;
+
+        float distance = INFINITY;
+        for(i=0; i<bn; i++){
+    		float temp = l1_distance(a[j].data, b[i].data, a[j].n);
+            if(temp<distance){
+                distance = temp;
+                bind = i;
+            }
+        }
+
         m[j].ai = j;
         m[j].bi = bind; // <- should be index in b.
         m[j].p = a[j].p;
         m[j].q = b[bind].p;
-        m[j].distance = 0; // <- should be the smallest L1 distance!
+        m[j].distance = distance; // <- should be the smallest L1 distance!
     }
 
     int count = 0;
@@ -153,6 +169,27 @@ match *match_descriptors(descriptor *a, int an, descriptor *b, int bn, int *mn)
     // Each point should only be a part of one match.
     // Some points will not be in a match.
     // In practice just bring good matches to front of list, set *mn.
+
+    qsort(m, an, sizeof(match), match_compare); // m will be sorted in increasing order of distances after this
+
+    // Calloc will assign all the values of seen to 0 when allocating memory, so we can set it to 1 to get the associations and one-to-one mapping.
+    for (i = 0; i < an; ++i){
+        // If bi point is already associated with some other point in a, the distance of current point will be greater than other associated point, so we will delete current point
+        if(seen[m[i].bi]){ 
+            for(j=i; j < an - 1; ++j){
+                m[j] = m[j+1];
+            }
+        
+            i = count - 1; // We need to again check the points after the last unseen values
+            an--; // 1 point deleted
+        }
+
+        else{
+            seen[m[i].bi] = 1; // If not already seen, we will mark the bi as seen
+            count++;
+        }
+    }
+
     *mn = count;
     free(seen);
     return m;
