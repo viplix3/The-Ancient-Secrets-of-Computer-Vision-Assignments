@@ -205,7 +205,20 @@ point project_point(matrix H, point p)
     // TODO: project point p with homography H.
     // Remember that homogeneous coordinates are equivalent up to scalar.
     // Have to divide by.... something...
-    point q = make_point(0, 0);
+
+    // Filling the vector that is to be projected.
+    c.data[0][0] = p.x;
+    c.data[1][0] = p.y;
+    c.data[2][0] = 1;
+
+    // Extracting the scalar of the homogenous matrix H
+    double w_swigly = H.data[H.rows-1][H.cols-1];
+
+    c = matrix_mult_matrix(H, c); // This will return us the values in c (original point) transformed using H but multiplies with scalar multiple
+
+    point q = make_point(c.data[0][0]/w_swigly, c.data[0][1]/w_swigly);
+    free_matrix(c);
+
     return q;
 }
 
@@ -215,7 +228,7 @@ point project_point(matrix H, point p)
 float point_distance(point p, point q)
 {
     // TODO: should be a quick one.
-    return 0;
+    return sqrt(pow((p.x - q.x), 2) + pow((p.y - q.y), 2));
 }
 
 // Count number of inliers in a set of matches. Should also bring inliers
@@ -229,11 +242,25 @@ float point_distance(point p, point q)
 //          so that the inliers are first in the array. For drawing.
 int model_inliers(matrix H, match *m, int n, float thresh)
 {
-    int i;
+    int i, j;
     int count = 0;
     // TODO: count number of matches that are inliers
     // i.e. distance(H*p, q) < thresh
     // Also, sort the matches m so the inliers are the first 'count' elements.
+    for(i=0; i<n; i++){
+        point projected_p = project_point(H, m[count].p);
+        float distance = point_distance(projected_p, m[count].q);
+        if(distance > thresh) // If this point doesn't qualify
+        {
+            // The point will be replaced with the last i-th element not iterated yet, so that all the points stisfying the threshold will be at top
+            match temp = m[n-(i+1)+count];
+            m[n-(i+1)+count] = m[count];
+            m[count] = temp;
+        }
+        else
+            count++;
+    }
+
     return count;
 }
 
@@ -243,6 +270,14 @@ int model_inliers(matrix H, match *m, int n, float thresh)
 void randomize_matches(match *m, int n)
 {
     // TODO: implement Fisher-Yates to shuffle the array.
+    // Just copied code from : https://www.geeksforgeeks.org/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/
+    int i;
+    for (i = n - 1; i > 0; --i){
+      int j = rand() % (i + 1);
+      match match_temp = m[i];
+      m[i] = m[j];
+      m[j] = match_temp;
+    }
 }
 
 // Computes homography between two images given matching pixels.
