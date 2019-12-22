@@ -35,6 +35,21 @@ def rainier_panorama():
     pan5 = panorama_image(pan4, im4, thresh=5)
     save_image(pan5, "rainier_panorama_5")
 
+def sun_panorama():
+    im1 = load_image("data/sun1.jpg")
+    im2 = load_image("data/sun2.jpg")
+    im3 = load_image("data/sun3.jpg")
+    im4 = load_image("data/sun4.jpg")
+    im5 = load_image("data/sun5.jpg")
+    pan = panorama_image(im1, im2, thresh=5)
+    save_image(pan, "sun_panorama_1")
+    pan1 = panorama_image(im3, im4, thresh=5)
+    pan2 = panorama_image(pan1, im5, thresh=5)
+    save_image(pan2, "sun_panorama_2")
+    pan3 = panorama_image(pan, pan2, thresh=5)
+    save_image(pan3, "sun_panorama_3")
+
+
 
 def field_panorama():
     im1 = load_image("data/field1.jpg")
@@ -67,9 +82,10 @@ def field_panorama():
     pan5 = panorama_image(pan4, im3, thresh=2, iters=50000, inlier_thresh=3)
     save_image(pan5, "field_panorama_5")
 
-draw_corners()
-draw_matches()
-easy_panorama()
-#rainier_panorama()
-#field_panorama()
+# draw_corners()
+# draw_matches()
+# easy_panorama()
+# rainier_panorama()
+sun_panorama()
+# field_panorama()
 

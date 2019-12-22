@@ -203,3 +203,8 @@ if __name__ == "__main__":
     m = find_and_draw_matches(a, b, 2, 50, 3)
     save_image(m, "matches")
 
+    # Panorama stitching testing
+    im1 = load_image("data/Rainier1.png")
+    im2 = load_image("data/Rainier2.png")
+    pan = panorama_image(im1, im2, thresh=50)
+    save_image(pan, "easy_panorama")

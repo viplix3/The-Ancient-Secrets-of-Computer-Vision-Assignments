@@ -120,7 +120,7 @@ float l1_distance(float *a, float *b, int n)
     // TODO: return the correct number.
     float l1_diff = 0.0;
     int i;
-    for(int i=0; i<n; i++){
+    for(i=0; i<n; i++){
     	l1_diff += fabsf(a[i] - b[i]);
     }
     return l1_diff;
@@ -134,7 +134,7 @@ float l1_distance(float *a, float *b, int n)
 //          one other descriptor in b.
 match *match_descriptors(descriptor *a, int an, descriptor *b, int bn, int *mn)
 {
-    int i,j;
+    int i, j;
 
     // We will have at most an matches.
     *mn = an;
@@ -143,7 +143,7 @@ match *match_descriptors(descriptor *a, int an, descriptor *b, int bn, int *mn)
         // TODO: for every descriptor in a, find best match in b.
         // record ai as the index in *a and bi as the index in *b.
         int bind = 0; // <- find the best match
-        i = 0;
+        // i = 0;
 
         float distance = INFINITY;
         for(i=0; i<bn; i++){
@@ -170,7 +170,7 @@ match *match_descriptors(descriptor *a, int an, descriptor *b, int bn, int *mn)
     // Some points will not be in a match.
     // In practice just bring good matches to front of list, set *mn.
 
-    qsort(m, an, sizeof(match), match_compare); // m will be sorted in increasing order of distances after this
+    qsort(m, an, sizeof(match), &match_compare); // m will be sorted in increasing order of distances after this
 
     // Calloc will assign all the values of seen to 0 when allocating memory, so we can set it to 1 to get the associations and one-to-one mapping.
     for (i = 0; i < an; ++i){
@@ -210,15 +210,11 @@ point project_point(matrix H, point p)
     c.data[0][0] = p.x;
     c.data[1][0] = p.y;
     c.data[2][0] = 1;
-
-    // Extracting the scalar of the homogenous matrix H
-    double w_swigly = H.data[H.rows-1][H.cols-1];
-
-    c = matrix_mult_matrix(H, c); // This will return us the values in c (original point) transformed using H but multiplies with scalar multiple
-
-    point q = make_point(c.data[0][0]/w_swigly, c.data[0][1]/w_swigly);
+    matrix x = matrix_mult_matrix(H, c);
+    point q = make_point(x.data[0][0] / x.data[2][0],
+                         x.data[1][0] / x.data[2][0]);
     free_matrix(c);
-
+    free_matrix(x);
     return q;
 }
 
@@ -242,7 +238,7 @@ float point_distance(point p, point q)
 //          so that the inliers are first in the array. For drawing.
 int model_inliers(matrix H, match *m, int n, float thresh)
 {
-    int i, j;
+    int i;
     int count = 0;
     // TODO: count number of matches that are inliers
     // i.e. distance(H*p, q) < thresh
@@ -253,9 +249,9 @@ int model_inliers(matrix H, match *m, int n, float thresh)
         if(distance > thresh) // If this point doesn't qualify
         {
             // The point will be replaced with the last i-th element not iterated yet, so that all the points stisfying the threshold will be at top
-            match temp = m[n-(i+1)+count];
-            m[n-(i+1)+count] = m[count];
-            m[count] = temp;
+            match temp = m[count];
+            m[count] = m[n-(i+1)+count];
+            m[n-(i+1)+count] = temp;
         }
         else
             count++;
@@ -289,22 +285,19 @@ matrix compute_homography(match *matches, int n)
     matrix M = make_matrix(n*2, 8);
     matrix b = make_matrix(n*2, 1);
 
-    int i, j;
+    int i;
     for(i = 0; i < n; ++i){
         double x  = matches[i].p.x;
         double xp = matches[i].q.x;
         double y  = matches[i].p.y;
         double yp = matches[i].q.y;
         // TODO: fill in the matrices M and b.
-
-        // Replicating the matrix from slide 48 of lecture (https://docs.google.com/presentation/d/1h2Az_a28qjKvLpbkwXoW0eut9HTwmjTkjCtk876PYN8/edit#slide=id.g3892fd55d7_5_78)
-        double arr_0[8] = {x, y, 1, 0, 0, 0, -x*xp, -y*xp};
-        double arr_1[8] = {0, 0, 0, x, y, 1, -x*yp, -y*yp};
-        memcpy(*(M.data+(2*i)), arr_0, sizeof(arr_0));
-        memcpy(*(M.data+(2*i)+1), arr_1, sizeof(arr_1));
-
+        double arr0[8] = {x, y, 1, 0, 0, 0, -x*xp, -y*xp};
+        double arr1[8] = {0, 0, 0, x, y, 1, -x*yp, -y*yp};
+        memcpy(*(M.data+2*i),   arr0, sizeof(arr0));
+        memcpy(*(M.data+2*i+1), arr1, sizeof(arr1));
         b.data[2*i][0] = xp;
-        b.data[(2*i)+1][0] = yp;
+        b.data[2*i+1][0] = yp;
     }
     matrix a = solve_system(M, b);
     free_matrix(M); free_matrix(b); 
@@ -316,12 +309,10 @@ matrix compute_homography(match *matches, int n)
     matrix H = make_matrix(3, 3);
     // TODO: fill in the homography H based on the result in a.
 
-    // Not very sure about the loop below
-    for(i=0; i<H.rows; i++){
-        for(j=0; j<H.cols; j++){
-            H.data[i][j] = a.data[j+(H.cols*i)][0];
-        }
+    for (i = 0; i < M.cols; ++i){
+      H.data[i / 3][i % 3] = a.data[i][0];
     }
+    H.data[2][2] = 1;
 
     free_matrix(a);
     return H;
@@ -349,6 +340,26 @@ matrix RANSAC(match *m, int n, float thresh, int k, int cutoff)
     //         if it's better than the cutoff:
     //             return it immediately
     // if we get to the end return the best homography
+
+    int i=0;
+    e = 4; //Completely random
+    matrix homography_H;
+    while(i<k){
+        randomize_matches(m, n); // shufle the matches
+        homography_H = compute_homography(m, e); // Compute homography with a few matches
+        int current_inliners = model_inliers(homography_H, m, n, thresh);
+        if(current_inliners > best){
+            best = current_inliners;
+            Hb = compute_homography(m, current_inliners);
+            if (best > cutoff){
+                free_matrix(homography_H);
+                return Hb;
+            }
+        }
+        ++i;
+    }
+
+    free_matrix(homography_H);
     return Hb;
 }
 
@@ -381,19 +392,22 @@ image combine_images(image a, image b, matrix H)
 
     // Can disable this if you are making very big panoramas.
     // Usually this means there was an error in calculating H.
+    /*
     if(w > 7000 || h > 7000){
         fprintf(stderr, "output too big, stopping\n");
         return copy_image(a);
     }
+    */
 
     int i,j,k;
     image c = make_image(w, h, a.c);
-    
+
     // Paste image a into the new image offset by dx and dy.
     for(k = 0; k < a.c; ++k){
         for(j = 0; j < a.h; ++j){
             for(i = 0; i < a.w; ++i){
                 // TODO: fill in.
+                set_pixel(c, i-dx, j-dy, k, get_pixel(a, i, j, k));
             }
         }
     }
@@ -403,6 +417,17 @@ image combine_images(image a, image b, matrix H)
     // and see if their projection from a coordinates to b coordinates falls
     // inside of the bounds of image b. If so, use bilinear interpolation to
     // estimate the value of b at that projection, then fill in image c.
+    for (k = 0; k < a.c; ++k){
+      for (j = topleft.y; j < botright.y; ++j){
+        for (i = topleft.x; i < botright.x; ++i){
+          point p = project_point(H, make_point(i, j));
+          if (p.x >= 0 && p.x < b.w && p.y >= 0 && p.y < b.h){
+            float v = bilinear_interpolate(b, p.x, p.y, k);
+            set_pixel(c, i-dx, j-dy, k, v);
+          }
+        }
+      }
+    }
 
     return c;
 }
@@ -421,7 +446,7 @@ image panorama_image(image a, image b, float sigma, float thresh, int nms, float
     int an = 0;
     int bn = 0;
     int mn = 0;
-    
+
     // Calculate corners and descriptors
     descriptor *ad = harris_corner_detector(a, sigma, thresh, nms, &an);
     descriptor *bd = harris_corner_detector(b, sigma, thresh, nms, &bn);
@@ -432,7 +457,7 @@ image panorama_image(image a, image b, float sigma, float thresh, int nms, float
     // Run RANSAC to find the homography
     matrix H = RANSAC(m, mn, inlier_thresh, iters, cutoff);
 
-    if(1){
+    if(0){
         // Mark corners and matches between images
         mark_corners(a, ad, an);
         mark_corners(b, bd, bn);
