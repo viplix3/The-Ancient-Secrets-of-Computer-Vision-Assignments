@@ -289,7 +289,7 @@ matrix compute_homography(match *matches, int n)
     matrix M = make_matrix(n*2, 8);
     matrix b = make_matrix(n*2, 1);
 
-    int i;
+    int i, j;
     for(i = 0; i < n; ++i){
         double x  = matches[i].p.x;
         double xp = matches[i].q.x;
@@ -297,6 +297,14 @@ matrix compute_homography(match *matches, int n)
         double yp = matches[i].q.y;
         // TODO: fill in the matrices M and b.
 
+        // Replicating the matrix from slide 48 of lecture (https://docs.google.com/presentation/d/1h2Az_a28qjKvLpbkwXoW0eut9HTwmjTkjCtk876PYN8/edit#slide=id.g3892fd55d7_5_78)
+        double arr_0[8] = {x, y, 1, 0, 0, 0, -x*xp, -y*xp};
+        double arr_1[8] = {0, 0, 0, x, y, 1, -x*yp, -y*yp};
+        memcpy(*(M.data+(2*i)), arr_0, sizeof(arr_0));
+        memcpy(*(M.data+(2*i)+1), arr_1, sizeof(arr_1));
+
+        b.data[2*i][0] = xp;
+        b.data[(2*i)+1][0] = yp;
     }
     matrix a = solve_system(M, b);
     free_matrix(M); free_matrix(b); 
@@ -308,6 +316,12 @@ matrix compute_homography(match *matches, int n)
     matrix H = make_matrix(3, 3);
     // TODO: fill in the homography H based on the result in a.
 
+    // Not very sure about the loop below
+    for(i=0; i<H.rows; i++){
+        for(j=0; j<H.cols; j++){
+            H.data[i][j] = a.data[j+(H.cols*i)][0];
+        }
+    }
 
     free_matrix(a);
     return H;
